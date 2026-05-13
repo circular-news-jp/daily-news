@@ -62,17 +62,29 @@ def get_gemini_news():
 
 def send_discord(message):
     if not message:
+        print("送信するメッセージが空です。")
         return
-    payload = {
-        "content": f"📅 **{datetime.date.today().strftime('%Y/%m/%d')} 資源循環・技術士朝刊**\n\n{message}"
-    }
-    try:
-        response = requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=10)
-        response.raise_for_status()
-        print("Discordへの送信に成功しました。")
-    except Exception as e:
-        print(f"Discord送信エラー: {e}")
 
+    header = f"📅 **{datetime.date.today().strftime('%Y/%m/%d')} 資源循環・技術士朝刊**\n\n"
+    full_text = header + message
+
+    # Discord の1メッセージ上限は2000文字。安全マージンで1900に分割
+    CHUNK = 1900
+    chunks = [full_text[i:i + CHUNK] for i in range(0, len(full_text), CHUNK)]
+
+    for idx, chunk in enumerate(chunks, start=1):
+        suffix = f"\n\n— ({idx}/{len(chunks)})" if len(chunks) > 1 else ""
+        payload = {"content": chunk + suffix}
+        try:
+            response = requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=10)
+            response.raise_for_status()
+            print(f"Discord送信成功 ({idx}/{len(chunks)})")
+        except requests.exceptions.HTTPError as e:
+            # 400系はレスポンス本文に原因が入っているので表示
+            body = e.response.text if e.response is not None else "(no body)"
+            print(f"Discord送信エラー ({idx}/{len(chunks)}): {e} / body={body}")
+        except Exception as e:
+            print(f"Discord送信エラー ({idx}/{len(chunks)}): {e}")
 
 def send_discord_failure(reason):
     """Gemini が完全に失敗したときの障害通知"""

@@ -19,7 +19,7 @@ client = genai.Client(api_key=API_KEY)
 
 def get_gemini_news():
     today = datetime.date.today().strftime("%Y年%m月%d日")
-   prompt = f"""
+   　prompt = f"""
 {today}時点で公開されている、日本国内および国際的な「資源循環・サーキュラーエコノミー」関連の最新動向を、Google検索を用いて調査し、簡潔な日次レポートにまとめてください。
 
 # 出力ルール（厳守）

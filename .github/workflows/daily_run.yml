@@ -22,8 +22,7 @@ jobs:
         run: |
           pip install google-genai requests
 
-          - name: プログラムを実行
+      - name: プログラムを実行
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: python daily_news.py

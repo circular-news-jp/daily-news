@@ -2,9 +2,8 @@ name: Daily Resource News Bot
 
 on:
   schedule:
-    # 毎日20:00 UTC（日本時間の翌朝5:00）に自動実行
     - cron: '0 20 * * *'
-  workflow_dispatch: # 手動実行ボタン
+  workflow_dispatch:
 
 jobs:
   run-bot:
@@ -19,10 +18,10 @@ jobs:
           python-version: '3.12'
 
       - name: 必要なライブラリをインストール
-        run: |
-          pip install google-genai requests
+        run: pip install google-genai requests
 
       - name: プログラムを実行
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python daily_news.py

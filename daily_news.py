@@ -63,6 +63,7 @@ def get_gemini_news():
                     if part.text:
                         output_text += part.text
                 if output_text.strip():
+                    print(f"=== Gemini出力プレビュー(先頭500字) ===\n{output_text[:500]}\n=== ここまで ===")
                     return output_text
             last_error = "空応答"
         except Exception as e:

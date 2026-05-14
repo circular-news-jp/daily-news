@@ -103,7 +103,7 @@ def send_discord(message):
         print("送信するメッセージが空です。")
         return
 
-    header = f"📅 **{datetime.date.today().strftime('%Y/%m/%d')} 資源循環・技術士朝刊**\n\n"
+    header = f"📅 **{datetime.date.today().strftime('%Y/%m/%d')} 資源循環朝刊**\n\n"
     full_text = header + message
 
     # Discord の1メッセージ上限は2000文字。安全マージンで1900に分割
@@ -129,7 +129,7 @@ def send_discord_failure(reason):
     today = datetime.date.today().strftime("%Y/%m/%d")
     payload = {
         "content": (
-            f"⚠️ **{today} 資源循環配信 配信失敗**\n"
+            f"⚠️ **{today} 資源循環朝刊 配信失敗**\n"
             f"Gemini API から有効な応答を取得できませんでした。\n"
             f"理由: `{reason}`\n"
             f"明日の自動実行を待つか、Actions の `Run workflow` から手動で再実行してください。"

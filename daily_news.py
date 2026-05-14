@@ -58,12 +58,31 @@ def get_gemini_news():
                 ),
             )
             if response.candidates:
+                candidate = response.candidates[0]
                 output_text = ""
-                for part in response.candidates[0].content.parts:
+                for part in candidate.content.parts:
                     if part.text:
                         output_text += part.text
+
+                # grounding_metadata から参照URLを抽出
+                sources = []
+                grounding = getattr(candidate, "grounding_metadata", None)
+                if grounding and getattr(grounding, "grounding_chunks", None):
+                    for chunk in grounding.grounding_chunks:
+                        web = getattr(chunk, "web", None)
+                        if web and getattr(web, "uri", None):
+                            title = getattr(web, "title", "") or web.uri
+                            sources.append(f"- {title}\n  {web.uri}")
+
                 if output_text.strip():
+                    # ソースを末尾に追加
+                    if sources:
+                        output_text += "\n\n---\n## 参照ソース\n" + "\n".join(sources)
+                    else:
+                        output_text += "\n\n---\n⚠️ 参照ソースが取得できませんでした(内容の信頼性に注意)"
+
                     print(f"=== Gemini出力プレビュー(先頭500字) ===\n{output_text[:500]}\n=== ここまで ===")
+                    print(f"=== 取得ソース数: {len(sources)} ===")
                     return output_text
             last_error = "空応答"
         except Exception as e:
@@ -110,7 +129,7 @@ def send_discord_failure(reason):
     today = datetime.date.today().strftime("%Y/%m/%d")
     payload = {
         "content": (
-            f"⚠️ **{today} 資源循環・技術士朝刊 配信失敗**\n"
+            f"⚠️ **{today} 資源循環配信 配信失敗**\n"
             f"Gemini API から有効な応答を取得できませんでした。\n"
             f"理由: `{reason}`\n"
             f"明日の自動実行を待つか、Actions の `Run workflow` から手動で再実行してください。"

@@ -5,11 +5,19 @@ import requests
 from google import genai
 from google.genai import types
 
+import publish
+
 API_KEY = os.environ.get("GEMINI_API_KEY")
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 MAX_RETRIES = int(os.environ.get("GEMINI_MAX_RETRIES", "3"))
 RETRY_BASE_WAIT = int(os.environ.get("GEMINI_RETRY_BASE_WAIT", "30"))  # 秒
+
+# 収益化: スポンサー枠(任意)。設定されていれば配信とアーカイブの末尾に差し込む。
+SPONSOR_MESSAGE = os.environ.get("SPONSOR_MESSAGE", "").strip()
+
+# アーカイブ公開(GitHub Pages)を行うか。CI では既定で有効。
+ENABLE_ARCHIVE = os.environ.get("ENABLE_ARCHIVE", "1") not in ("0", "false", "False", "")
 
 if not API_KEY or not DISCORD_WEBHOOK_URL:
     raise ValueError("GEMINI_API_KEY または DISCORD_WEBHOOK_URL が設定されていません。")
@@ -18,6 +26,12 @@ client = genai.Client(api_key=API_KEY)
 
 
 def get_gemini_news():
+    """ニュースを取得する。
+
+    戻り値は常にタプル (text, error):
+      - 成功時: (本文文字列, None)
+      - 失敗時: (None, エラー理由文字列)
+    """
     today = datetime.date.today()
     today_str = today.strftime("%Y年%m月%d日")
     week_ago_str = (today - datetime.timedelta(days=7)).strftime("%Y年%m月%d日")
@@ -53,7 +67,7 @@ def get_gemini_news():
      - 価格改定があった場合は、改定日・改定幅・改定後価格を明記
      - 数値が取れない場合は「上昇傾向」「横ばい」など定性記述
      - 該当情報なしの場合は「直近1週間で該当情報を確認できず」と明記
-     
+
 # 出力フォーマット
 各領域について、以下の形式で記述してください:
 
@@ -104,7 +118,7 @@ def get_gemini_news():
 
                     print(f"=== Gemini出力プレビュー(先頭500字) ===\n{output_text[:500]}\n=== ここまで ===")
                     print(f"=== 取得ソース数: {len(sources)} ===")
-                    return output_text
+                    return output_text, None
             last_error = "空応答"
         except Exception as e:
             last_error = str(e)
@@ -117,6 +131,13 @@ def get_gemini_news():
 
     print(f"全{MAX_RETRIES}回の試行が失敗しました。最後のエラー: {last_error}")
     return None, last_error
+
+
+def with_sponsor(text):
+    """本文の末尾にスポンサー枠を差し込む(設定時のみ)。"""
+    if not SPONSOR_MESSAGE:
+        return text
+    return f"{text}\n\n---\n## 📣 スポンサー\n{SPONSOR_MESSAGE}"
 
 
 def send_discord(message):
@@ -163,10 +184,16 @@ def send_discord_failure(reason):
 
 
 if __name__ == "__main__":
-    result = get_gemini_news()
-    if isinstance(result, tuple):
-        # 失敗ケース: (None, error_reason)
-        _, reason = result
-        send_discord_failure(reason)
+    text, reason = get_gemini_news()
+    if not text:
+        # 失敗ケース
+        send_discord_failure(reason or "不明なエラー")
     else:
-        send_discord(result)
+        body = with_sponsor(text)
+        send_discord(body)
+        if ENABLE_ARCHIVE:
+            try:
+                publish.publish_entry(datetime.date.today(), body)
+            except Exception as e:
+                # 配信は成功しているので、アーカイブ失敗で全体を落とさない
+                print(f"アーカイブ生成エラー(配信自体は成功): {e}")

@@ -5,6 +5,10 @@ on:
     - cron: '0 20 * * *'
   workflow_dispatch:
 
+# アーカイブ(docs/)をリポジトリにコミットして戻すため書き込み権限が必要
+permissions:
+  contents: write
+
 jobs:
   run-bot:
     runs-on: ubuntu-latest
@@ -18,10 +22,26 @@ jobs:
           python-version: '3.12'
 
       - name: 必要なライブラリをインストール
-        run: pip install google-genai requests
+        run: pip install google-genai requests markdown
 
       - name: プログラムを実行
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # 収益化用の任意設定(Secrets/Variables で設定すると反映)
+          SPONSOR_MESSAGE: ${{ vars.SPONSOR_MESSAGE }}
+          SUBSCRIBE_URL: ${{ vars.SUBSCRIBE_URL }}
+          SITE_BASE_URL: ${{ vars.SITE_BASE_URL }}
         run: python daily_news.py
+
+      - name: アーカイブをコミット
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs
+          if git diff --cached --quiet; then
+            echo "更新なし。コミットをスキップします。"
+          else
+            git commit -m "Publish archive $(date -u +%Y-%m-%d)"
+            git push
+          fi

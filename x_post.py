@@ -123,6 +123,26 @@ def _truncate_weighted(text, limit):
     return "".join(out).rstrip() + "…"
 
 
+def _fill_lines(candidates, budget, max_lines=3):
+    """加重文字数 budget に収まるだけ行を詰める。
+
+    途中で切れた文章は読みにくいので、丸ごと入る項目だけを採用する。
+    1件も入らないときに限り、先頭の項目を入る範囲まで切り詰める。
+    """
+    lines = []
+    for cand in candidates:
+        if len(lines) >= max_lines or budget <= 0:
+            break
+        cost = weighted_len(cand) + 1  # 改行分
+        if cost <= budget:
+            lines.append(cand)
+            budget -= cost
+        elif not lines:
+            lines.append(_truncate_weighted(cand, budget - 1))
+            budget = 0
+    return lines
+
+
 def _strip_markdown(line):
     line = _URL_RE.sub("", line)
     line = re.sub(r"[*`_\[\]]", "", line)
@@ -191,22 +211,12 @@ def build_post(date, body_md):
     header = f"📅 {date.strftime('%Y/%m/%d')} 資源循環朝刊"
     footer = HASHTAGS
 
-    fixed = weighted_len(header + "\n\n" + "\n\n" + footer)
-    budget = MAX_WEIGHTED - fixed
-
-    lines = []
-    for category, item in extract_highlights(body_md):
-        candidate = f"・{category}: {item}" if category else f"・{item}"
-        candidate = _truncate_weighted(candidate, 90)
-        cost = weighted_len(candidate) + 1  # 改行分
-        if cost > budget:
-            continue
-        lines.append(candidate)
-        budget -= cost
-        if len(lines) >= 3:
-            break
-
-    body = "\n".join(lines)
+    budget = MAX_WEIGHTED - weighted_len(f"{header}\n\n\n\n{footer}")
+    candidates = [
+        f"・{category}: {item}" if category else f"・{item}"
+        for category, item in extract_highlights(body_md)
+    ]
+    body = "\n".join(_fill_lines(candidates, budget))
     return f"{header}\n\n{body}\n\n{footer}" if body else f"{header}\n\n{footer}"
 
 
@@ -216,16 +226,7 @@ def build_category_post(date, category, items):
     footer = HASHTAGS
 
     budget = MAX_WEIGHTED - weighted_len(f"{header}\n\n\n\n{footer}")
-    lines = []
-    for item in items:
-        candidate = _truncate_weighted(f"・{item}", 120)
-        cost = weighted_len(candidate) + 1  # 改行分
-        if cost > budget:
-            continue
-        lines.append(candidate)
-        budget -= cost
-        if len(lines) >= 3:
-            break
+    lines = _fill_lines([f"・{item}" for item in items], budget)
 
     if not lines:
         return None
@@ -440,7 +441,7 @@ def post_due(now=None, path=QUEUE_PATH):
 
 
 SAMPLE_MD = """### 1. 政策・法規制
-- 環境省が資源有効利用促進法の改正案についてパブリックコメントを開始した。
+- 環境省は、2026年7月21日付で「令和7年度補正予算 地域資源の徹底活用に向けた資源循環加速化事業（モデル事業）」の公募採択結果を公表した。
 - 経産省が再生材利用率の目標設定に向けた検討会を開催。
 
 ### 2. 技術・研究動向

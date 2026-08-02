@@ -1,4 +1,5 @@
 import os
+import re
 import datetime
 import time
 import requests
@@ -23,6 +24,28 @@ if not API_KEY or not DISCORD_WEBHOOK_URL:
     raise ValueError("GEMINI_API_KEY または DISCORD_WEBHOOK_URL が設定されていません。")
 
 client = genai.Client(api_key=API_KEY)
+
+
+_HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+\S")
+
+
+def dedupe_repeated_headings(text):
+    """連続して繰り返された見出し行を1つにまとめる。
+
+    Google検索グラウンディングを使うと応答が複数パートに分割され、
+    パート境界で直前の見出し行が次パート先頭に再掲されることがある。
+    parts をそのまま連結すると同じ見出しが2行続き、記事ページでも
+    Discord配信でも見出しが二重に表示されてしまう。
+    """
+    result = []
+    for line in text.split("\n"):
+        if _HEADING_RE.match(line):
+            # 直前の(空行を除く)行が同じ見出しなら捨てる
+            prev = next((l for l in reversed(result) if l.strip()), None)
+            if prev is not None and prev.strip() == line.strip():
+                continue
+        result.append(line)
+    return "\n".join(result)
 
 
 def get_gemini_news():
@@ -98,6 +121,8 @@ def get_gemini_news():
                 for part in candidate.content.parts:
                     if part.text:
                         output_text += part.text
+                # パート境界で再掲された見出しの重複を除去
+                output_text = dedupe_repeated_headings(output_text)
 
                 # grounding_metadata から参照URLを抽出
                 sources = []

@@ -25,8 +25,10 @@ SITE_DESCRIPTION = os.environ.get(
     "資源循環・サーキュラーエコノミーの動向を毎朝お届けするニュースダイジェスト。",
 )
 # RSS のリンクを絶対URLにするためのベースURL(末尾スラッシュ付き)
-SITE_BASE_URL = os.environ.get(
-    "SITE_BASE_URL", "https://takayuki19850218.github.io/daily-news/"
+# CI では未設定のリポジトリ変数が空文字として渡るため、空の場合も既定値にフォールバックする
+DEFAULT_SITE_BASE_URL = "https://circular-news-jp.github.io/daily-news/"
+SITE_BASE_URL = (
+    os.environ.get("SITE_BASE_URL", "").strip() or DEFAULT_SITE_BASE_URL
 ).rstrip("/") + "/"
 # 購読フォームのURL(Beehiiv等の登録ページ)。未設定なら購読ボタンは表示しない。
 SUBSCRIBE_URL = os.environ.get("SUBSCRIBE_URL", "").strip()

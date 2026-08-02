@@ -317,8 +317,9 @@ class XApiError(RuntimeError):
 
     HINTS = {
         401: "キーの値が違う可能性があります(前後の空白や改行が混ざっていないか確認)。",
+        402: "X側のクレジット残高が不足しています。Developer Portal で残高を確認してください。",
         403: "アクセストークンが read 権限のままか、同じ本文の重複投稿の可能性があります。",
-        429: "レート上限に達しています。Freeプランは500ポスト/月です。",
+        429: "レート上限に達しています。投稿間隔かスロット数を見直してください。",
     }
 
     def __init__(self, status, body):
@@ -330,6 +331,11 @@ class XApiError(RuntimeError):
     @property
     def is_duplicate(self):
         return self.status == 403 and "duplicate" in self.body.lower()
+
+    @property
+    def is_out_of_credit(self):
+        """クレジット残高切れ。設定ミスではないのでジョブは落とさず見送る。"""
+        return self.status == 402
 
 
 def _post(text, reply_to=None):
@@ -370,7 +376,13 @@ def post_entry(date, body_md, url):
         print("記事URLが取得できないため X 投稿をスキップします。")
         return False
 
-    tweet_id = _post_with_reply(build_post(date, body_md), build_reply(url))
+    try:
+        tweet_id = _post_with_reply(build_post(date, body_md), build_reply(url))
+    except XApiError as e:
+        if e.is_out_of_credit:
+            print("⚠️ Xのクレジット残高が不足しているため、朝の全体ポストを見送りました。")
+            return False
+        raise
     print(f"X投稿成功: https://x.com/i/status/{tweet_id}")
     return True
 
@@ -403,6 +415,11 @@ def post_due(now=None, path=QUEUE_PATH):
     try:
         tweet_id = _post_with_reply(item["text"], item.get("reply"))
     except XApiError as e:
+        if e.is_out_of_credit:
+            # 残高が復活すれば投稿されるよう、未投稿のまま残して見送る
+            print(f"⚠️ Xのクレジット残高が不足しているため投稿できません[{item['slot']} {item['category']}]")
+            print(f"   {e.body}")
+            return False
         if not e.is_duplicate:
             raise
         # 同じ本文が既に投稿されている(前回の実行が記録前に落ちた等)。

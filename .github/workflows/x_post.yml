@@ -1,0 +1,57 @@
+name: X Scheduled Post
+
+# 朝の生成時に作られた state/x_queue.json から、時刻の来たカテゴリ別ポストを1件投稿する。
+# cron は UTC。JST = UTC+9 なので、下の時刻は 08:00 / 12:00 / 15:00 / 18:00 / 21:00(JST)。
+# 時刻を変えるときは x_post.py の DEFAULT_SLOTS(または Variables の X_POST_SLOTS)も合わせること。
+on:
+  schedule:
+    - cron: '0 23 * * *'  # 08:00 JST
+    - cron: '0 3 * * *'   # 12:00 JST
+    - cron: '0 6 * * *'   # 15:00 JST
+    - cron: '0 9 * * *'   # 18:00 JST
+    - cron: '0 12 * * *'  # 21:00 JST
+  workflow_dispatch:
+
+# 投稿済みフラグを state/ に書き戻すため書き込み権限が必要
+permissions:
+  contents: write
+
+# 日次生成ジョブと同時に走ってpushが衝突しないよう直列化する
+concurrency:
+  group: daily-news-repo-write
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: コードをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Pythonをセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 必要なライブラリをインストール
+        run: pip install requests requests-oauthlib
+
+      - name: 期限の来たポストを投稿
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+        run: python x_post.py --post-due
+
+      - name: 投稿状態をコミット
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add state
+          if git diff --cached --quiet; then
+            echo "更新なし。コミットをスキップします。"
+          else
+            git commit -m "Update X post queue"
+            git pull --rebase origin main
+            git push
+          fi

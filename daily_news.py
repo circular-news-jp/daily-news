@@ -7,6 +7,7 @@ from google import genai
 from google.genai import types
 
 import publish
+import x_post
 
 API_KEY = os.environ.get("GEMINI_API_KEY")
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
@@ -217,8 +218,15 @@ if __name__ == "__main__":
         body = with_sponsor(text)
         send_discord(body)
         if ENABLE_ARCHIVE:
+            entry_url = None
             try:
-                publish.publish_entry(datetime.date.today(), body)
+                entry_url = publish.publish_entry(datetime.date.today(), body)
             except Exception as e:
                 # 配信は成功しているので、アーカイブ失敗で全体を落とさない
                 print(f"アーカイブ生成エラー(配信自体は成功): {e}")
+            if entry_url:
+                try:
+                    # 記事へ誘導するXポスト。失敗しても配信・アーカイブは維持する
+                    x_post.post_entry(datetime.date.today(), body, entry_url)
+                except Exception as e:
+                    print(f"X投稿エラー(配信・アーカイブは成功): {e}")

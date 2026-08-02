@@ -220,7 +220,10 @@ def _render_rss(entries):
 
 
 def publish_entry(date, body_md):
-    """1日分のレポートを公開する。記事HTMLを書き出し、一覧とRSSを再生成する。"""
+    """1日分のレポートを公開する。記事HTMLを書き出し、一覧とRSSを再生成する。
+
+    戻り値は公開された記事の絶対URL(SNS投稿などの誘導先に使う)。
+    """
     _ensure_dirs()
 
     date_str = date.strftime("%Y/%m/%d")
@@ -244,3 +247,4 @@ def publish_entry(date, body_md):
         f.write(_render_rss(entries))
 
     print(f"アーカイブ公開: entries/{file_name}(全{len(entries)}件 / RSS更新)")
+    return f"{SITE_BASE_URL}entries/{file_name}"

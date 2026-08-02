@@ -312,13 +312,33 @@ def _auth():
     )
 
 
+class XApiError(RuntimeError):
+    """X API がエラーを返したときの例外(原因の切り分け用に本文を保持する)。"""
+
+    HINTS = {
+        401: "キーの値が違う可能性があります(前後の空白や改行が混ざっていないか確認)。",
+        403: "アクセストークンが read 権限のままか、同じ本文の重複投稿の可能性があります。",
+        429: "レート上限に達しています。Freeプランは500ポスト/月です。",
+    }
+
+    def __init__(self, status, body):
+        self.status = status
+        self.body = body
+        hint = self.HINTS.get(status, "")
+        super().__init__(f"X API {status}: {body}" + (f"\nヒント: {hint}" if hint else ""))
+
+    @property
+    def is_duplicate(self):
+        return self.status == 403 and "duplicate" in self.body.lower()
+
+
 def _post(text, reply_to=None):
     payload = {"text": text}
     if reply_to:
         payload["reply"] = {"in_reply_to_tweet_id": reply_to}
     res = requests.post(API_URL, json=payload, auth=_auth(), timeout=15)
     if res.status_code >= 400:
-        raise RuntimeError(f"X API {res.status_code}: {res.text}")
+        raise XApiError(res.status_code, res.text)
     return res.json()["data"]["id"]
 
 
@@ -380,7 +400,20 @@ def post_due(now=None, path=QUEUE_PATH):
         return False
 
     item = due[0]
-    tweet_id = _post_with_reply(item["text"], item.get("reply"))
+    try:
+        tweet_id = _post_with_reply(item["text"], item.get("reply"))
+    except XApiError as e:
+        if not e.is_duplicate:
+            raise
+        # 同じ本文が既に投稿されている(前回の実行が記録前に落ちた等)。
+        # 投稿済みとして記録し、次のスロットへ進める。
+        print(f"同一内容が投稿済みのため、投稿済みとして記録します[{item['slot']} {item['category']}]")
+        item["posted"] = True
+        item["posted_at"] = now.isoformat(timespec="seconds")
+        item["note"] = "duplicate"
+        save_queue(queue, path)
+        return False
+
     item["posted"] = True
     item["posted_at"] = now.isoformat(timespec="seconds")
     item["tweet_id"] = tweet_id

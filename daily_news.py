@@ -27,6 +27,16 @@ if not API_KEY or not DISCORD_WEBHOOK_URL:
 client = genai.Client(api_key=API_KEY)
 
 
+def today_jst():
+    """日本時間での「今日」。
+
+    GitHub Actions のランナーは UTC なので date.today() を使うと、
+    JST 5:00(=前日20:00 UTC)の実行が前日の日付になってしまう。
+    朝刊の日付・記事ファイル名・X投稿キューはすべて JST に揃える。
+    """
+    return datetime.datetime.now(x_post.JST).date()
+
+
 _HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+\S")
 
 
@@ -56,7 +66,7 @@ def get_gemini_news():
       - 成功時: (本文文字列, None)
       - 失敗時: (None, エラー理由文字列)
     """
-    today = datetime.date.today()
+    today = today_jst()
     today_str = today.strftime("%Y年%m月%d日")
     week_ago_str = (today - datetime.timedelta(days=7)).strftime("%Y年%m月%d日")
 
@@ -171,7 +181,7 @@ def send_discord(message):
         print("送信するメッセージが空です。")
         return
 
-    header = f"📅 **{datetime.date.today().strftime('%Y/%m/%d')} 資源循環朝刊**\n\n"
+    header = f"📅 **{today_jst().strftime('%Y/%m/%d')} 資源循環朝刊**\n\n"
     full_text = header + message
 
     # Discord の1メッセージ上限は2000文字。安全マージンで1900に分割
@@ -194,7 +204,7 @@ def send_discord(message):
 
 def send_discord_failure(reason):
     """Gemini が完全に失敗したときの障害通知"""
-    today = datetime.date.today().strftime("%Y/%m/%d")
+    today = today_jst().strftime("%Y/%m/%d")
     payload = {
         "content": (
             f"⚠️ **{today} 資源循環朝刊 配信失敗**\n"
@@ -220,13 +230,13 @@ if __name__ == "__main__":
         if ENABLE_ARCHIVE:
             entry_url = None
             try:
-                entry_url = publish.publish_entry(datetime.date.today(), body)
+                entry_url = publish.publish_entry(today_jst(), body)
             except Exception as e:
                 # 配信は成功しているので、アーカイブ失敗で全体を落とさない
                 print(f"アーカイブ生成エラー(配信自体は成功): {e}")
             if entry_url:
                 try:
                     # 記事へ誘導するXポスト。失敗しても配信・アーカイブは維持する
-                    x_post.post_entry(datetime.date.today(), body, entry_url)
+                    x_post.post_entry(today_jst(), body, entry_url)
                 except Exception as e:
                     print(f"X投稿エラー(配信・アーカイブは成功): {e}")

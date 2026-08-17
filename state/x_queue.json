@@ -1,33 +1,41 @@
 {
-  "date": "2026-08-17",
-  "url": "https://circular-news-jp.github.io/daily-news/entries/2026-08-17.html",
+  "date": "2026-08-18",
+  "url": "https://circular-news-jp.github.io/daily-news/entries/2026-08-18.html",
   "items": [
+    {
+      "slot": "08:00",
+      "category": "政策・法規制",
+      "text": "🏛️ 政策・法規制(08/18)\n\n・環境省は2026年8月17日、令和７年度補正予算循環型社会形成推進事業費補助金（自動車における再生材市場構築のための産官学連携推進事業）の一次公募の採択結果を公表しました。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
+      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-08-18.html",
+      "posted": false
+    },
     {
       "slot": "12:00",
       "category": "相場メモ",
-      "text": "📈 相場メモ(08/17)\n\n・JX金属 電気銅建値:\n・2026年8月5日に前回比50円/kg上げ、改定後価格は2,330円/kgとなった。\n・2026年8月12日に前回比50円/kg上げ、改定後価格は2,380円/kgとなった。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
-      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-08-17.html",
-      "posted": true,
-      "posted_at": "2026-08-17T12:37:56+09:00",
-      "tweet_id": "2089194994624057621"
+      "text": "📈 相場メモ(08/18)\n\n・JX金属 電気銅建値: JX金属は2026年8月17日付で電気銅建値を4万円引き上げ、242万円/トンに改定しました。これは先週付けた過去最高値を更新したものです。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
+      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-08-18.html",
+      "posted": false
     },
     {
       "slot": "15:00",
       "category": "産業動向",
-      "text": "🏭 産業動向(08/17)\n\n・住友金属鉱山は2026年8月10日に26年度第1四半期決算説明会を開催し、業績見通しを上方修正した。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
-      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-08-17.html",
-      "posted": true,
-      "posted_at": "2026-08-17T15:49:17+09:00",
-      "tweet_id": "2089243151013683301"
+      "text": "🏭 産業動向(08/18)\n\n・中山製鋼所は、阪和興業およびヨドコウとの資本提携により、新電炉への布陣を完成させたと報じられています（2026年8月10日付の報道を8月17日に集約）。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
+      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-08-18.html",
+      "posted": false
+    },
+    {
+      "slot": "18:00",
+      "category": "技術・研究動向",
+      "text": "🔬 技術・研究動向(08/18)\n\n・環境省は2026年8月17日、令和８年度リチウムイオン電池等の回収・処理体制の構築等に向けた実証事業の二次公募を開始しました。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
+      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-08-18.html",
+      "posted": false
     },
     {
       "slot": "21:00",
       "category": "海外規制・市場",
-      "text": "🌍 海外規制・市場(08/17)\n\n・2026年7月8日付でEU官報に掲載されたELV規則（Regulation (EU) 2026/1738）が2026年8月13日に発効し、これに伴いEUバッテリー規則（Regulation (EU) 2023/1542）も同日付で改正が適用された。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
-      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-08-17.html",
-      "posted": true,
-      "posted_at": "2026-08-17T21:36:15+09:00",
-      "tweet_id": "2089330467430449482"
+      "text": "🌍 海外規制・市場(08/18)\n\n・欧州バッテリー規則は2023年8月17日に施行されており、2024年から各義務が順次適用されています。 特に2026年8月18日には、産業用バッテリー（2kWh超）、EVバッテリー、SLIバッテリーに対するリサイクル済み原材料の最…\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
+      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-08-18.html",
+      "posted": false
     }
   ]
 }

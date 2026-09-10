@@ -1,44 +1,40 @@
 {
-  "date": "2026-09-10",
-  "url": "https://circular-news-jp.github.io/daily-news/entries/2026-09-10.html",
+  "date": "2026-09-11",
+  "url": "https://circular-news-jp.github.io/daily-news/entries/2026-09-11.html",
   "items": [
     {
       "slot": "08:00",
       "category": "政策・法規制",
-      "text": "🏛️ 政策・法規制(09/10)\n\n・環境省は、2026年9月8日に「令和8年度スクラップヤード環境対策技術検討会（第3回）」の開催について発表しました。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
-      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-09-10.html",
-      "posted": true,
-      "posted_at": "2026-09-10T16:32:36+09:00",
-      "tweet_id": "2097951357265191329"
+      "text": "🏛️ 政策・法規制(09/11)\n\n・環境省は、2026年9月8日に「令和8年度スクラップヤード環境対策技術検討会（第3回）」の開催について発表しました。また、9月7日には「高度化法における判断基準の達成に向けて」の講習会開催と、「令和7年度補正予算…\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
+      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-09-11.html",
+      "posted": false
     },
     {
       "slot": "12:00",
       "category": "相場メモ",
-      "text": "📈 相場メモ(09/10)\n\n・電気銅建値 (JX金属):\n・2026年9月1日付で前回改定から20,000円引き上げられ、1トン当たり2,400,000円となりました。\n・2026年9月3日付で前回改定から30,000円引き下げられ、1トン当たり2,370,000円となりました。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
-      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-09-10.html",
-      "posted": true,
-      "posted_at": "2026-09-10T22:16:19+09:00",
-      "tweet_id": "2098037860024598955"
+      "text": "📈 相場メモ(09/11)\n\n・鉄スクラップ・銅建値などの相場動向について、直近1週間で価格改定や具体的な数値の発表は確認できませんでした。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
+      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-09-11.html",
+      "posted": false
     },
     {
       "slot": "15:00",
       "category": "産業動向",
-      "text": "🏭 産業動向(09/10)\n\n・JX金属サーキュラーソリューションズ（JXCS）は、KDDIとローソンが実施するAI自動分別リサイクルボックス「Bin-e」を活用した使用済みリチウムイオン電池内蔵製品の回収実証に参画し、モバイルバッテリーと加熱式たばこの収…\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
-      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-09-10.html",
+      "text": "🏭 産業動向(09/11)\n\n・三菱マテリアルグループの日本新金属は、重要鉱物であるタングステンの国内資源循環および安定供給基盤を強化するため、秋田工場の湿式精錬設備などへの約80億円の投資を決定しました。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
+      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-09-11.html",
       "posted": false
     },
     {
       "slot": "18:00",
       "category": "技術・研究動向",
-      "text": "🔬 技術・研究動向(09/10)\n\n・コクヨは2026年9月2日、「Office Plastic Recycling Project 2026」と題し、オフィスから排出される使用済み文具などの複合プラスチックを回収・再生する実証実験を実施し、独自の技術で再生パネルを製造しました。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
-      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-09-10.html",
+      "text": "🔬 技術・研究動向(09/11)\n\n・DOWAエコシステムは、電動車駆動モーターを対象としたレアアース磁石リサイクル技術の実証事業を環境省の採択を受け実施します。これにより、レアアース資源の国内資源循環と調達リスク対応が期待されます。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
+      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-09-11.html",
       "posted": false
     },
     {
       "slot": "21:00",
       "category": "海外規制・市場",
-      "text": "🌍 海外規制・市場(09/10)\n\n・EUバッテリー規則（Regulation (EU) 2023/1542）は2024年2月18日から適用されており、2026年からはバッテリーのラベル表示要件が強化され、化学タイプ、容量、メーカーID、廃棄物収集マークなどの明確な製品情報の提供…\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
-      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-09-10.html",
+      "text": "🌍 海外規制・市場(09/11)\n\n・欧州連合（EU）の動向として、2026年5月27日に新たな廃棄物輸送規則に基づくデジタル追跡基盤が稼働し、域内での再生資源利用可能性の向上が図られていることが報じられています。\n\n#資源循環 #サーキュラーエコノミー #リサイクル",
+      "reply": "▼詳細は本日の朝刊で\nhttps://circular-news-jp.github.io/daily-news/entries/2026-09-11.html",
       "posted": false
     }
   ]

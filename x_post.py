@@ -24,6 +24,7 @@ import os
 import re
 import sys
 import json
+import time
 import datetime
 
 import requests
@@ -339,14 +340,28 @@ class XApiError(RuntimeError):
         return self.status == 402
 
 
+# X側の一時的な障害(メンテナンス等)を示すステータス。数秒待てば復旧することが多いのでリトライする。
+_TRANSIENT_STATUSES = {500, 502, 503, 504}
+_MAX_ATTEMPTS = 3
+_RETRY_DELAY_SEC = 5
+
+
 def _post(text, reply_to=None):
     payload = {"text": text}
     if reply_to:
         payload["reply"] = {"in_reply_to_tweet_id": reply_to}
-    res = requests.post(API_URL, json=payload, auth=_auth(), timeout=15)
-    if res.status_code >= 400:
-        raise XApiError(res.status_code, res.text)
-    return res.json()["data"]["id"]
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        res = requests.post(API_URL, json=payload, auth=_auth(), timeout=15)
+        if res.status_code >= 400:
+            if res.status_code in _TRANSIENT_STATUSES and attempt < _MAX_ATTEMPTS:
+                print(
+                    f"X API {res.status_code}(一時的な障害の可能性)。"
+                    f"{_RETRY_DELAY_SEC}秒後に再試行します({attempt}/{_MAX_ATTEMPTS})"
+                )
+                time.sleep(_RETRY_DELAY_SEC)
+                continue
+            raise XApiError(res.status_code, res.text)
+        return res.json()["data"]["id"]
 
 
 def _post_with_reply(text, reply_text):

@@ -1,5 +1,7 @@
 import os
 import re
+import html
+import json
 import datetime
 import time
 import requests
@@ -14,6 +16,9 @@ DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 MAX_RETRIES = int(os.environ.get("GEMINI_MAX_RETRIES", "3"))
 RETRY_BASE_WAIT = int(os.environ.get("GEMINI_RETRY_BASE_WAIT", "30"))  # 秒
+
+# 検索対象期間(日)。インデックス遅延や実行ずれの余裕として2日にし、重複は前回記事の除外リストで消す。
+NEWS_WINDOW_DAYS = int(os.environ.get("NEWS_WINDOW_DAYS", "2"))
 
 # 収益化: スポンサー枠(任意)。設定されていれば配信とアーカイブの末尾に差し込む。
 SPONSOR_MESSAGE = os.environ.get("SPONSOR_MESSAGE", "").strip()
@@ -59,6 +64,43 @@ def dedupe_repeated_headings(text):
     return "\n".join(result)
 
 
+def load_previous_items(today, num_entries=3, max_chars=6000):
+    """直近の朝刊に載せた箇条書きを取り出す(今回の重複除外用)。
+
+    前日が「新規なし」だった日に、さらに前の記事の内容が再登場しないよう、
+    今日より前の最新 num_entries 件を対象にする。
+    取得できない場合は空リストを返し、除外なしで通常どおり生成する。
+    """
+    try:
+        today_file = today.strftime("%Y-%m-%d") + ".html"
+        with open(publish.MANIFEST_PATH, encoding="utf-8") as f:
+            entries = json.load(f)
+        prev_files = sorted((e["file"] for e in entries if e["file"] < today_file), reverse=True)[:num_entries]
+    except Exception as e:
+        print(f"前回記事の読み込みに失敗(重複除外なしで続行): {e}")
+        return []
+
+    items, total = [], 0
+    for file_name in prev_files:
+        try:
+            with open(os.path.join(publish.ENTRIES_DIR, file_name), encoding="utf-8") as f:
+                page = f.read()
+        except Exception as e:
+            print(f"{file_name} の読み込みに失敗(スキップ): {e}")
+            continue
+        # 参照ソース以降は除く
+        page = page.split("<h2>参照ソース</h2>")[0]
+        for li in re.findall(r"<li>(.*?)</li>", page, flags=re.S):
+            text = html.unescape(re.sub(r"<[^>]+>", "", li)).strip()
+            if not text or "確認でき" in text or "前回から変更なし" in text:
+                continue
+            if total + len(text) > max_chars:
+                return items
+            items.append(text)
+            total += len(text)
+    return items
+
+
 def get_gemini_news():
     """ニュースを取得する。
 
@@ -68,11 +110,24 @@ def get_gemini_news():
     """
     today = today_jst()
     today_str = today.strftime("%Y年%m月%d日")
-    week_ago_str = (today - datetime.timedelta(days=7)).strftime("%Y年%m月%d日")
+    since_str = (today - datetime.timedelta(days=NEWS_WINDOW_DAYS)).strftime("%Y年%m月%d日")
+
+    previous_items = load_previous_items(today)
+    if previous_items:
+        exclusion = (
+            "\n# 直近の朝刊に掲載済みの内容(再掲しないこと)\n"
+            "以下は直近の朝刊に載せた項目です。同じ出来事・同じ発表・同じ数値は、"
+            "言い換えても載せないでください。続報や新たな展開がある場合のみ、"
+            "新しい点に絞って記載してください。\n"
+            + "\n".join(f"- {t}" for t in previous_items)
+            + "\n"
+        )
+    else:
+        exclusion = ""
 
     prompt = f"""
-{week_ago_str}〜{today_str}の直近1週間に公開された、日本国内および国際的な「資源循環・サーキュラーエコノミー」関連の動向を、Google検索を用いて調査し、日次レポートにまとめてください。
-
+{since_str}〜{today_str}に公開された、日本国内および国際的な「資源循環・サーキュラーエコノミー」関連の新しい動向を、Google検索を用いて調査し、日次レポートにまとめてください。毎日配信しているため、前回の朝刊以降に出た新着情報に絞ってください。
+{exclusion}
 # 探索領域と検索キーワード
 各領域について、Google検索で複数キーワードを試して情報を収集してください。
 
@@ -100,7 +155,8 @@ def get_gemini_news():
      - 数値（円/トンなど）は出典で確認できた場合のみ記載
      - 価格改定があった場合は、改定日・改定幅・改定後価格を明記
      - 数値が取れない場合は「上昇傾向」「横ばい」など定性記述
-     - 該当情報なしの場合は「直近1週間で該当情報を確認できず」と明記
+     - 前回の朝刊から変更がない場合は、数値を繰り返さず「前回から変更なし」と記載
+     - 該当情報なしの場合は「前回の朝刊以降、新規の該当情報を確認できず」と明記
 
 # 出力フォーマット
 各領域について、以下の形式で記述してください:
